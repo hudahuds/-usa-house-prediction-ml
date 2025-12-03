@@ -168,18 +168,21 @@ df_processed.to_csv("./data/processed/train.csv", index=False)
 
 print("Fichier train.csv créé dans data/processed !") # donc là on a crèer une nouvelle version CSV dans train.csv modele nettoyè et pret 
 
-
-import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.pyplot as plt
 
-# Supposons que ton DataFrame nettoyé s'appelle df
-plt.figure(figsize=(12, 8))
+# Sélectionner les colonnes numériques
+num_cols = [
+    "price", "bedrooms", "bathrooms", "sqft_living", "sqft_lot",
+    "floors", "waterfront", "view", "condition", "sqft_above",
+    "sqft_basement", "yr_built", "yr_renovated"
+]
 
-# Calcul de la corrélation et affichage avec annot
-sns.heatmap(df.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+# Calculer la corrélation
+corr_matrix = df[num_cols].corr()
 
-plt.title("Matrice de corrélation des features")
+# Afficher la heatmap
+plt.figure(figsize=(12,8))
+sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f")
+plt.title("Matrice de corrélation")
 plt.show()
-
-print(df.dtypes)
-df_corr = df.fillna(0).corr()

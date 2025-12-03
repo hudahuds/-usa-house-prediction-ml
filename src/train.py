@@ -34,8 +34,7 @@ features = [
     "sqft_above",
     "sqft_basement",
     "age_of_house",
-     "has_been_renovated",   # décommente si tu veux l'utiliser et si elle existe dans train.csv
-]
+     "has_been_renovated" ]
 
 missing = [c for c in features + ["price"] if c not in df.columns]
 if missing:
