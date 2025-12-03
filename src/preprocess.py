@@ -1,12 +1,14 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os 
+
 df = pd.read_csv("./data/raw/USA Housing Dataset.csv")
-print(df.head())
+print(df.head(10))
 print(df.shape)
 print(df.info()) 
 print(df.columns)
-print(df.iloc[1000])
+print(df.iloc[234])
 
 df.drop(columns=["date"], inplace=True) #on a supprimè la colonne date elle etait toutes 00000
 print(df.columns)
@@ -121,7 +123,7 @@ plt.ylabel("Prix ($)")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.show()
 #Graphe : Prix vs Surface pour Seattle
-import matplotlib.pyplot as plt
+
 
 # Filtrer uniquement Seattle
 df_seattle = df[df["city"].str.contains("seattle", case=False, na=False)].copy()
@@ -139,3 +141,45 @@ plt.grid(True)
 plt.show()
 
 
+final_columns = [
+    "price",
+    "bedrooms",
+    "bathrooms",
+    "sqft_living",
+    "sqft_lot",
+    "floors",
+    "waterfront",
+    "view",
+    "condition",
+    "sqft_above",
+    "sqft_basement",
+    "age_of_house",
+    "has_been_renovated",
+    "city",
+    "statezip",
+    "street"
+]
+
+# Sélectionner uniquement ces colonnes
+df_processed = df[final_columns].copy()
+
+# Sauvegarder dans data/processed/train.csv
+df_processed.to_csv("./data/processed/train.csv", index=False)
+
+print("Fichier train.csv créé dans data/processed !") # donc là on a crèer une nouvelle version CSV dans train.csv modele nettoyè et pret 
+
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Supposons que ton DataFrame nettoyé s'appelle df
+plt.figure(figsize=(12, 8))
+
+# Calcul de la corrélation et affichage avec annot
+sns.heatmap(df.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+
+plt.title("Matrice de corrélation des features")
+plt.show()
+
+print(df.dtypes)
+df_corr = df.fillna(0).corr()
