@@ -8,7 +8,7 @@ import joblib
 from xgboost import XGBRegressor
 
 # --- Chemins ---
-processed_csv = "./data/processed/train_clean.csv"  # dataset nettoyé
+processed_csv = "./data/processed/train_clean_encoded.csv"  # dataset nettoyé
 model_dir = "./models"
 model_path = os.path.join(model_dir, "xgb_model.pkl")
 scaler_path = os.path.join(model_dir, "scaler_xgb.pkl")
@@ -38,8 +38,8 @@ X_test_scaled = scaler.transform(X_test)
 
 # --- Créer et entraîner XGBoost ---
 model = XGBRegressor(
-    n_estimators=500,
-    learning_rate=0.05,
+    n_estimators=300,
+    learning_rate=0.01,
     max_depth=5,
     random_state=42
 )
@@ -63,23 +63,6 @@ print(f"Scaler sauvegardé : {scaler_path}")
 
 
 
-#Teste toutes les combinaisons possibles d’hyperparamètres
 
-from sklearn.model_selection import GridSearchCV
-from xgboost import XGBRegressor
 
-xgb = XGBRegressor(random_state=42)
-
-param_grid = {
-    "n_estimators": [100, 200, 300],
-    "max_depth": [3, 5, 7],
-    "learning_rate": [0.01, 0.05, 0.1],
-    "subsample": [0.7, 0.8, 1.0],
-}
-
-grid = GridSearchCV(xgb, param_grid, scoring="r2", cv=3, verbose=1)
-grid.fit(X_train_scaled, y_train)
-
-print("Best params:", grid.best_params_)
-print("Best R2:", grid.best_score_)
-
+#Best params: {'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 300, 'subsample': 0.7}

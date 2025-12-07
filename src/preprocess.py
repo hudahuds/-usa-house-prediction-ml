@@ -168,8 +168,7 @@ df_processed.to_csv("./data/processed/train.csv", index=False)
 
 print("Fichier train.csv créé dans data/processed !") # donc là on a crèer une nouvelle version CSV dans train.csv modele nettoyè et pret 
 
-import seaborn as sns
-import matplotlib.pyplot as plt
+
 
 # Sélectionner les colonnes numériques
 num_cols = [
@@ -186,3 +185,104 @@ plt.figure(figsize=(12,8))
 sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f")
 plt.title("Matrice de corrélation")
 plt.show()
+
+
+
+plt.figure(figsize=(15, 10))
+sns.boxplot(data=df[['price', 'sqft_living', 'sqft_lot', 'bedrooms', 'bathrooms']])
+plt.title("Visualisation des Outliers")
+plt.xticks(rotation=45)
+plt.show()
+
+
+plt.figure(figsize=(10, 6))
+sns.histplot(df['price'], bins=50, kde=True)
+plt.title("Distribution du prix")
+plt.show()
+
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x=df['sqft_living'], y=df['price'])
+plt.title("Prix vs Superficie (sqft_living)")
+plt.show()
+
+## comptage des outliers 
+
+Q1 = df['price'].quantile(0.25)
+Q3 = df['price'].quantile(0.75)
+IQR = Q3 - Q1
+
+# Limites pour définir les outliers
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+outliers = df[(df['price'] < lower_bound) | (df['price'] > upper_bound)]
+print(f"Nombre d'outliers : {len(outliers)}")
+## donc j'ai trouvè 215 outliers 
+
+df_clean = df[(df['price'] >= lower_bound) & (df['price'] <= upper_bound)]
+print(f"Données après suppression des outliers : {df_clean.shape}")
+
+df_clean.to_csv("./data/processed/train_clean.csv", index=False)
+print("Dataset nettoyé sauvegardé dans train_clean.csv")
+
+
+
+
+
+
+# Charger le dataset nettoyé
+df = pd.read_csv("./data/processed/train_clean.csv")  # ou train.csv nettoyé
+
+# Fonction pour calculer les outliers selon l'IQR
+def detect_outliers_IQR(col):
+    Q1 = col.quantile(0.25)
+    Q3 = col.quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    outliers = col[(col < lower_bound) | (col > upper_bound)]
+    return outliers
+
+# Exemple pour la colonne "price"
+outliers_price = detect_outliers_IQR(df["price"])
+print(f"Nombre d'outliers dans price : {len(outliers_price)}")
+
+# Tu peux faire pareil pour d'autres colonnes numériques
+numeric_cols = ["bedrooms","bathrooms","sqft_living","sqft_lot","floors","sqft_above","sqft_basement","age_of_house"]
+for col in numeric_cols:
+    outliers_col = detect_outliers_IQR(df[col])
+    print(f"{col}: {len(outliers_col)} outliers")
+
+
+# Supprimer les outliers de price
+df_cleaned = df[~df["price"].isin(outliers_price)].copy()
+
+# Vérification
+print(f"Nombre de lignes après suppression des outliers price : {len(df_cleaned)}")
+
+# Optionnel : sauvegarder le dataset propre
+df_cleaned.to_csv("./data/processed/train_clean_no_outliers.csv", index=False)
+print("Dataset nettoyé sauvegardé !")
+
+
+# encodage 
+
+df = pd.read_csv("./data/processed/train_clean_no_outliers.csv")
+df.describe
+print(list(df.columns))
+df.head(50)
+df = df.drop(columns=["yr_renovated_filled"])
+df.to_csv("./data/processed/train_clean_no_outliers.csv", index=False)
+df = df.drop(columns=["yr_built", "yr_renovated"])
+df.to_csv("./data/processed/train_clean_no_outliers.csv", index=False)
+
+print(df.columns)
+df.info()
+
+# Afficher les valeurs uniques
+print("Waterfront:", df["waterfront"].unique())
+print("View:", df["view"].unique())
+print("Condition:", df["condition"].unique())
+
+print(df["statezip"])
+print(df["statezip"].unique())
