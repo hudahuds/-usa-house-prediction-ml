@@ -123,3 +123,5 @@ plt.ylabel("R²")
 plt.title("Courbe d'apprentissage")
 plt.legend()
 plt.show()
+
+

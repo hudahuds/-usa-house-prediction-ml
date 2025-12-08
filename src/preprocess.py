@@ -2,7 +2,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os 
-
+import numpy as np 
 df = pd.read_csv("./data/raw/USA Housing Dataset.csv")
 print(df.head(10))
 print(df.shape)
@@ -285,4 +285,79 @@ print("View:", df["view"].unique())
 print("Condition:", df["condition"].unique())
 
 print(df["statezip"])
-print(df["statezip"].unique())
+print(df["city"].unique())
+
+print("Street uniques :", df["street"].unique())
+df.drop(columns=["street"], inplace=True)
+df.columns
+
+
+# Charger le dataset propre
+df = pd.read_csv("./data/processed/train_clean_no_outliers.csv")
+
+# --- 1) Label Encoding pour city ---
+le = LabelEncoder()
+df["city_encoded"] = le.fit_transform(df["city"])
+df.drop(columns=["city"], inplace=True)
+
+# --- 2) K-Fold Target Encoding pour statezip ---
+df["statezip_encoded"] = np.nan
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+for train_idx, val_idx in kf.split(df):
+    train_fold = df.iloc[train_idx]
+    val_fold = df.iloc[val_idx]
+    
+    # Moyenne du prix par ZIP dans le fold d'entraînement
+    zip_mean = train_fold.groupby("statezip")["price"].mean()
+    
+    # Appliquer aux indices du fold de validation
+    df.loc[val_idx, "statezip_encoded"] = df.loc[val_idx, "statezip"].map(zip_mean)
+
+# Remplacer les NaN (ZIP inconnus) par la moyenne globale
+df["statezip_encoded"].fillna(df["price"].mean(), inplace=True)
+df.drop(columns=["statezip"], inplace=True)
+
+# --- 3) Vérifications ---
+print(df.head())
+
+
+# --- 4) Sauvegarder le dataset encodé ---
+df.to_csv("./data/processed/train_clean_encoded.csv", index=False)
+print("Encodage terminé et fichier sauvegardé !")
+
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import KFold
+import numpy as np
+
+# Charger le dataset propre (sans outliers)
+df = pd.read_csv("./data/processed/train_clean_no_outliers.csv")
+
+# --- 1) Label Encoding pour city ---
+le = LabelEncoder()
+df["city_encoded"] = le.fit_transform(df["city"])
+
+# Supprimer la colonne city originale
+df.drop(columns=["city"], inplace=True)
+
+# --- 2) K-Fold Target Encoding pour statezip ---
+df["statezip_encoded"] = np.nan
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+for train_idx, val_idx in kf.split(df):
+    train_fold = df.iloc[train_idx]
+    val_fold = df.iloc[val_idx]
+    
+    zip_mean = train_fold.groupby("statezip")["price"].mean()
+    df.loc[val_idx, "statezip_encoded"] = df.loc[val_idx, "statezip"].map(zip_mean)
+
+# Supprimer la colonne statezip originale
+df.drop(columns=["statezip"], inplace=True)
+
+# Sauvegarder le dataset final
+df.to_csv("./data/processed/train_clean_encoded.csv", index=False)
+print("Encodage terminé. Colonnes actuelles :", df.columns)
+
+df.isna().sum().sum()
+df.dropna(inplace=True)

@@ -59,10 +59,11 @@ os.makedirs(model_dir, exist_ok=True)
 joblib.dump(model, model_path)
 joblib.dump(scaler, scaler_path)
 print(f"Modèle XGBoost sauvegardé : {model_path}")
-print(f"Scaler sauvegardé : {scaler_path}")
+print(f"Scaler sauvegardé : {scaler_path}")                                
 
 
 
 
 
 #Best params: {'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 300, 'subsample': 0.7}
+
